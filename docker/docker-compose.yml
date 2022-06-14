@@ -1,18 +1,20 @@
-version: '3.3'
+version: '3.8'
 
 services:
-    db:
-        restart: always
-        image: mysql/mysql-server:5.7.28
-        container_name: mlflow_db
-        expose:
-            - "3306"
-        networks:
-            - backend
+    mlflow-db:
+        image: postgres:14.3
         environment:
-            - MYSQL_DATABASE=${MYSQL_DATABASE}
-            - MYSQL_USER=${MYSQL_USER}
-            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-        volumes:
-            - dbdata:/var/lib/mysql
+            POSTGRES_DB: mlflowdb
+            POSTGRES_USER: mlflow
+            POSTGRES_PASSWORD: password
+        ports:
+            - "5436:5432"
+
+    mlflow-server:
+        build:
+            context: ./dockerfiles/
+            dockerfile: Dockerfile.server
+        container_name: mlflow_server
+        ports:
+            - "8000:8000"
+        command: mlflow server --host 0.0.0.0:8000 --backend-store-uri postgresql://mlflow:password@mlflow-db:5432/mlflowdb #--default-artifact-root s3://test-bucket/
