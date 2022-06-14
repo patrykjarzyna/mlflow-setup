@@ -10,6 +10,22 @@ services:
         ports:
             - "5436:5432"
 
+    ftpd_server:
+        image: stilliard/pure-ftpd
+        container_name: pure-ftpd
+        ports:
+          - "21:21"
+          - "30000-30009:30000-30009"
+        volumes:
+          - "C:/Users/Patryk/Desktop/projects/mlflow-setup:/home/username/"
+         # - "/folder_on_disk/passwd:/etc/pure-ftpd/passwd"
+        environment:
+          PUBLICHOST: "localhost"
+          FTP_USER_NAME: username
+          FTP_USER_PASS: mypass
+          FTP_USER_HOME: /home/username
+        restart: always
+
     mlflow-server:
         build:
             context: ./dockerfiles/
@@ -17,4 +33,4 @@ services:
         container_name: mlflow_server
         ports:
             - "8000:8000"
-        command: mlflow server --host 0.0.0.0:8000 --backend-store-uri postgresql://mlflow:password@mlflow-db:5432/mlflowdb #--default-artifact-root s3://test-bucket/
+        command: mlflow server --host 0.0.0.0:8000 --backend-store-uri postgresql://mlflow:password@mlflow-db:5432/mlflowdb --default-artifact-root 0.0.0.0:21
